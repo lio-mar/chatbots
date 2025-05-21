@@ -1,146 +1,179 @@
 using System;
-using System.Collections.Generic;
 
-abstract class Mensagem
+// Interfaces e classes base
+public interface IMensagem
+{
+    void Enviar();
+}
+
+public abstract class MensagemBase : IMensagem
 {
     public string Conteudo { get; set; }
     public DateTime DataEnvio { get; set; }
 
-    public Mensagem(string conteudo)
+    protected MensagemBase(string conteudo)
     {
         Conteudo = conteudo;
         DataEnvio = DateTime.Now;
     }
 
-    public abstract void Exibir();
+    public abstract void Enviar();
 }
 
-class MensagemTexto : Mensagem
+// Tipos de mensagens
+public class MensagemTexto : MensagemBase
 {
     public MensagemTexto(string conteudo) : base(conteudo) { }
 
-    public override void Exibir()
+    public override void Enviar()
     {
-        Console.WriteLine($"[Texto] Conteúdo: {Conteudo}, Enviado em: {DataEnvio}");
+        Console.WriteLine($"Enviando mensagem de texto: {Conteudo}");
+        Console.WriteLine($"Data de envio: {DataEnvio}");
     }
 }
 
-abstract class MensagemArquivo : Mensagem
+public class MensagemVideo : MensagemBase
+{
+    public string Arquivo { get; set; }
+    public string Formato { get; set; }
+    public TimeSpan Duracao { get; set; }
+
+    public MensagemVideo(string conteudo, string arquivo, string formato, TimeSpan duracao) 
+        : base(conteudo)
+    {
+        Arquivo = arquivo;
+        Formato = formato;
+        Duracao = duracao;
+    }
+
+    public override void Enviar()
+    {
+        Console.WriteLine($"Enviando vídeo: {Conteudo}");
+        Console.WriteLine($"Arquivo: {Arquivo}, Formato: {Formato}, Duração: {Duracao}");
+        Console.WriteLine($"Data de envio: {DataEnvio}");
+    }
+}
+
+public class MensagemFoto : MensagemBase
 {
     public string Arquivo { get; set; }
     public string Formato { get; set; }
 
-    public MensagemArquivo(string conteudo, string arquivo, string formato)
+    public MensagemFoto(string conteudo, string arquivo, string formato) 
         : base(conteudo)
     {
         Arquivo = arquivo;
         Formato = formato;
     }
-}
 
-class MensagemFoto : MensagemArquivo
-{
-    public MensagemFoto(string conteudo, string arquivo, string formato)
-        : base(conteudo, arquivo, formato) { }
-
-    public override void Exibir()
+    public override void Enviar()
     {
-        Console.WriteLine($"[Foto] Conteúdo: {Conteudo}, Arquivo: {Arquivo}, Formato: {Formato}, Enviado em: {DataEnvio}");
+        Console.WriteLine($"Enviando foto: {Conteudo}");
+        Console.WriteLine($"Arquivo: {Arquivo}, Formato: {Formato}");
+        Console.WriteLine($"Data de envio: {DataEnvio}");
     }
 }
 
-class MensagemVideo : MensagemArquivo
+public class MensagemArquivo : MensagemBase
 {
-    public int Duracao { get; set; }
+    public string Arquivo { get; set; }
+    public string Formato { get; set; }
 
-    public MensagemVideo(string conteudo, string arquivo, string formato, int duracao)
-        : base(conteudo, arquivo, formato)
+    public MensagemArquivo(string conteudo, string arquivo, string formato) 
+        : base(conteudo)
     {
-        Duracao = duracao;
+        Arquivo = arquivo;
+        Formato = formato;
     }
 
-    public override void Exibir()
+    public override void Enviar()
     {
-        Console.WriteLine($"[Vídeo] Conteúdo: {Conteudo}, Arquivo: {Arquivo}, Formato: {Formato}, Duração: {Duracao}s, Enviado em: {DataEnvio}");
-    }
-}
-
-class MensagemGenericaArquivo : MensagemArquivo
-{
-    public MensagemGenericaArquivo(string conteudo, string arquivo, string formato)
-        : base(conteudo, arquivo, formato) { }
-
-    public override void Exibir()
-    {
-        Console.WriteLine($"[Arquivo] Conteúdo: {Conteudo}, Arquivo: {Arquivo}, Formato: {Formato}, Enviado em: {DataEnvio}");
+        Console.WriteLine($"Enviando arquivo: {Conteudo}");
+        Console.WriteLine($"Arquivo: {Arquivo}, Formato: {Formato}");
+        Console.WriteLine($"Data de envio: {DataEnvio}");
     }
 }
 
-interface ICanal
+// Canais de comunicação
+public interface ICanalComunicacao
 {
-    void EnviarMensagem(Mensagem mensagem, string destino);
+    void EnviarMensagem(IMensagem mensagem, string destinatario);
 }
 
-class WhatsApp : ICanal
+public class WhatsApp : ICanalComunicacao
 {
-    public void EnviarMensagem(Mensagem mensagem, string numeroTelefone)
+    public void EnviarMensagem(IMensagem mensagem, string numeroTelefone)
     {
-        Console.WriteLine($"Enviando via WhatsApp para {numeroTelefone}:");
-        mensagem.Exibir();
+        Console.WriteLine($"Enviando para WhatsApp no número: {numeroTelefone}");
+        mensagem.Enviar();
     }
 }
 
-class Telegram : ICanal
+public class Telegram : ICanalComunicacao
 {
-    public void EnviarMensagem(Mensagem mensagem, string identificador)
+    public void EnviarMensagem(IMensagem mensagem, string destinatario)
     {
-        Console.WriteLine($"Enviando via Telegram para {identificador}:");
-        mensagem.Exibir();
+        // Telegram pode usar número ou usuário
+        if (destinatario.StartsWith("@"))
+        {
+            Console.WriteLine($"Enviando para Telegram no usuário: {destinatario}");
+        }
+        else
+        {
+            Console.WriteLine($"Enviando para Telegram no número: {destinatario}");
+        }
+        mensagem.Enviar();
     }
 }
 
-class Facebook : ICanal
+public class Facebook : ICanalComunicacao
 {
-    public void EnviarMensagem(Mensagem mensagem, string usuario)
+    public void EnviarMensagem(IMensagem mensagem, string usuario)
     {
-        Console.WriteLine($"Enviando via Facebook para {usuario}:");
-        mensagem.Exibir();
+        Console.WriteLine($"Enviando para Facebook no usuário: {usuario}");
+        mensagem.Enviar();
     }
 }
 
-class Instagram : ICanal
+public class Instagram : ICanalComunicacao
 {
-    public void EnviarMensagem(Mensagem mensagem, string usuario)
+    public void EnviarMensagem(IMensagem mensagem, string usuario)
     {
-        Console.WriteLine($"Enviando via Instagram para {usuario}:");
-        mensagem.Exibir();
+        Console.WriteLine($"Enviando para Instagram no usuário: {usuario}");
+        mensagem.Enviar();
     }
 }
 
+// Classe principal para demonstrar o uso
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        Mensagem texto = new MensagemTexto("Olá, tudo bem?");
-        Mensagem video = new MensagemVideo("Confira esse vídeo", "video.mp4", "mp4", 120);
-        Mensagem foto = new MensagemFoto("Veja essa imagem", "foto.jpg", "jpg");
-        Mensagem arquivo = new MensagemGenericaArquivo("Segue o relatório", "relatorio.pdf", "pdf");
+        // Criando canais
+        var whatsapp = new WhatsApp();
+        var telegram = new Telegram();
+        var facebook = new Facebook();
+        var instagram = new Instagram();
 
-        List<(ICanal canal, string destino)> canais = new List<(ICanal, string)>
-        {
-            (new WhatsApp(), "+5511999999999"),
-            (new Telegram(), "@usuario_telegram"),
-            (new Facebook(), "usuario_facebook"),
-            (new Instagram(), "usuario_instagram")
-        };
+        // Criando mensagens
+        var texto = new MensagemTexto("Olá, tudo bem?");
+        var video = new MensagemVideo("Veja este vídeo", "video1.mp4", "mp4", TimeSpan.FromMinutes(2));
+        var foto = new MensagemFoto("Minha foto", "foto1.jpg", "jpg");
+        var arquivo = new MensagemArquivo("Documento importante", "doc.pdf", "pdf");
 
-        foreach (var (canal, destino) in canais)
-        {
-            canal.EnviarMensagem(texto, destino);
-            canal.EnviarMensagem(video, destino);
-            canal.EnviarMensagem(foto, destino);
-            canal.EnviarMensagem(arquivo, destino);
-            Console.WriteLine();
-        }
+        // Enviando mensagens pelos canais
+        whatsapp.EnviarMensagem(texto, "+5511999999999");
+        Console.WriteLine();
+        
+        telegram.EnviarMensagem(video, "@usuario_telegram");
+        Console.WriteLine();
+        
+        facebook.EnviarMensagem(foto, "usuario_facebook");
+        Console.WriteLine();
+        
+        instagram.EnviarMensagem(arquivo, "usuario_instagram");
+        Console.WriteLine();
+        
+        telegram.EnviarMensagem(texto, "+5511888888888");
     }
 }
